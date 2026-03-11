@@ -1,0 +1,308 @@
+/* ============================================================
+   Equipment Rental Management System – Custom Styles
+   ============================================================ */
+
+:root {
+    --sidebar-width : 255px;
+    --sidebar-bg    : #1e293b;
+    --sidebar-hover : rgba(255,255,255,0.07);
+    --sidebar-active: #2563eb;
+    --body-bg       : #f1f5f9;
+    --primary       : #2563eb;
+    --success       : #16a34a;
+    --warning       : #d97706;
+    --danger        : #dc2626;
+}
+
+/* ── Base ───────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+body {
+    background : var(--body-bg);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size  : 14px;
+    color      : #1e293b;
+}
+
+/* ── Layout wrapper ─────────────────────────────────────────── */
+.wrapper { display: flex; min-height: 100vh; }
+
+/* ── Sidebar ────────────────────────────────────────────────── */
+.sidebar {
+    width     : var(--sidebar-width);
+    min-width : var(--sidebar-width);
+    background: var(--sidebar-bg);
+    display   : flex;
+    flex-direction: column;
+    position  : sticky;
+    top       : 0;
+    height    : 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    padding      : 22px 18px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-brand .brand-title {
+    color      : #fff;
+    font-size  : 16px;
+    font-weight: 700;
+    margin     : 0;
+    line-height: 1.2;
+}
+.sidebar-brand .brand-sub {
+    color    : rgba(255,255,255,0.4);
+    font-size: 11px;
+    margin   : 2px 0 0;
+}
+.sidebar-brand .brand-icon {
+    width           : 38px;
+    height          : 38px;
+    background      : var(--primary);
+    border-radius   : 9px;
+    display         : flex;
+    align-items     : center;
+    justify-content : center;
+    font-size       : 18px;
+    color           : #fff;
+    flex-shrink     : 0;
+}
+
+.sidebar-nav { padding: 12px 10px; flex: 1; }
+.sidebar-nav .nav-section-label {
+    color      : rgba(255,255,255,0.3);
+    font-size  : 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding    : 10px 10px 4px;
+}
+
+.sidebar-nav .nav-item { margin-bottom: 2px; }
+.sidebar-nav .nav-link {
+    color      : rgba(255,255,255,0.68);
+    padding    : 10px 12px;
+    border-radius: 8px;
+    display    : flex;
+    align-items: center;
+    gap        : 11px;
+    font-size  : 13.5px;
+    font-weight: 500;
+    transition : background 0.15s, color 0.15s;
+    text-decoration: none;
+}
+.sidebar-nav .nav-link i { width: 17px; text-align: center; font-size: 13px; }
+.sidebar-nav .nav-link:hover  { background: var(--sidebar-hover); color: #fff; }
+.sidebar-nav .nav-link.active { background: var(--sidebar-active); color: #fff; }
+
+.sidebar-footer {
+    padding      : 14px 18px;
+    border-top   : 1px solid rgba(255,255,255,0.08);
+    color        : rgba(255,255,255,0.35);
+    font-size    : 11px;
+}
+
+/* ── Main content ───────────────────────────────────────────── */
+.main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.top-bar {
+    background  : #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding     : 13px 28px;
+    display     : flex;
+    align-items : center;
+    justify-content: space-between;
+    position    : sticky;
+    top         : 0;
+    z-index     : 50;
+    box-shadow  : 0 1px 3px rgba(0,0,0,0.05);
+}
+.top-bar .page-title   { font-size: 17px; font-weight: 700; margin: 0; color: #1e293b; }
+.top-bar .page-subtitle{ font-size: 12px; color: #64748b; margin: 0; }
+
+.content { padding: 24px 28px; }
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.card {
+    background   : #fff;
+    border       : none;
+    border-radius: 12px;
+    box-shadow   : 0 1px 8px rgba(0,0,0,0.06);
+}
+.card-header {
+    background   : transparent;
+    border-bottom: 1px solid #f1f5f9;
+    padding      : 15px 20px;
+    font-weight  : 600;
+    font-size    : 14px;
+    color        : #1e293b;
+    display      : flex;
+    align-items  : center;
+    gap          : 8px;
+}
+
+/* ── Stat cards ─────────────────────────────────────────────── */
+.stat-card {
+    border-radius: 12px;
+    padding      : 20px 22px;
+    color        : #fff;
+    position     : relative;
+    overflow     : hidden;
+}
+.stat-card .stat-icon {
+    width          : 46px;
+    height         : 46px;
+    background     : rgba(255,255,255,0.2);
+    border-radius  : 10px;
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    font-size      : 20px;
+}
+.stat-card .stat-value {
+    font-size  : 28px;
+    font-weight: 700;
+    margin     : 10px 0 2px;
+    line-height: 1;
+}
+.stat-card .stat-label { font-size: 12px; opacity: 0.85; }
+.stat-card .stat-change {
+    font-size  : 11px;
+    opacity    : 0.75;
+    margin-top : 6px;
+}
+
+.bg-blue   { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+.bg-green  { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+.bg-amber  { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+.bg-red    { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+.bg-purple { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+
+/* ── Tables ─────────────────────────────────────────────────── */
+.table thead th {
+    background     : #f8fafc;
+    font-size      : 11px;
+    font-weight    : 600;
+    text-transform : uppercase;
+    letter-spacing : 0.5px;
+    color          : #64748b;
+    border-bottom  : 2px solid #e2e8f0;
+    padding        : 11px 16px;
+    white-space    : nowrap;
+}
+.table tbody td {
+    padding       : 11px 16px;
+    vertical-align: middle;
+    border-color  : #f1f5f9;
+    font-size     : 13.5px;
+}
+.table tbody tr:hover { background: #f8fafc; }
+.table-wrapper { overflow-x: auto; }
+
+/* ── Status badges ──────────────────────────────────────────── */
+.badge-rented {
+    background: #fef3c7; color: #92400e;
+    padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
+    display: inline-block;
+}
+.badge-returned {
+    background: #dcfce7; color: #14532d;
+    padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
+    display: inline-block;
+}
+.badge-overdue {
+    background: #fee2e2; color: #7f1d1d;
+    padding: 4px 11px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
+    display: inline-block;
+}
+.badge-available {
+    background: #dcfce7; color: #14532d;
+    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    display: inline-block;
+}
+.badge-unavailable {
+    background: #fee2e2; color: #7f1d1d;
+    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    display: inline-block;
+}
+
+/* ── Forms ──────────────────────────────────────────────────── */
+.form-label {
+    font-weight: 500;
+    font-size  : 13px;
+    color      : #374151;
+    margin-bottom: 5px;
+}
+.form-control, .form-select, .form-control:focus, .form-select:focus {
+    border-radius: 8px;
+    font-size    : 13.5px;
+    border-color : #d1d5db;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary);
+    box-shadow  : 0 0 0 3px rgba(37,99,235,0.12);
+}
+
+/* ── Buttons ────────────────────────────────────────────────── */
+.btn { border-radius: 8px; font-size: 13.5px; font-weight: 500; }
+.btn-primary { background: var(--primary); border-color: var(--primary); }
+.btn-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+
+/* ── Alerts ─────────────────────────────────────────────────── */
+.alert { border-radius: 10px; border: none; font-size: 13.5px; }
+
+/* ── Empty state ────────────────────────────────────────────── */
+.empty-state {
+    padding  : 50px 20px;
+    text-align: center;
+    color    : #94a3b8;
+}
+.empty-state i { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+
+/* ── Search / filter bar ────────────────────────────────────── */
+.filter-bar {
+    background   : #fff;
+    border-radius: 12px;
+    padding      : 16px 20px;
+    box-shadow   : 0 1px 8px rgba(0,0,0,0.06);
+    margin-bottom: 20px;
+}
+
+/* ── Rental ID pill ─────────────────────────────────────────── */
+.rental-id {
+    font-family: monospace;
+    background : #f1f5f9;
+    padding    : 2px 8px;
+    border-radius: 6px;
+    font-size  : 12px;
+    color      : #475569;
+}
+
+/* ── Section divider ────────────────────────────────────────── */
+hr.section-hr { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
+
+/* ── Calculation box ────────────────────────────────────────── */
+.calc-box {
+    background   : #f0f9ff;
+    border       : 1px solid #bae6fd;
+    border-radius: 10px;
+    padding      : 16px 20px;
+}
+.calc-box .calc-row {
+    display        : flex;
+    justify-content: space-between;
+    align-items    : center;
+    padding        : 4px 0;
+    font-size      : 13.5px;
+    color          : #0369a1;
+}
+.calc-box .calc-total {
+    font-size  : 17px;
+    font-weight: 700;
+    color      : #0c4a6e;
+    border-top : 1px solid #bae6fd;
+    margin-top : 8px;
+    padding-top: 8px;
+}

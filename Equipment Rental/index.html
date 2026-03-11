@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EquipRent — Equipment Rental Management System</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    /* ── Variables ─────────────────────────────────────────────── */
+    :root {
+      --sidebar-w   : 260px;
+      --sidebar-bg  : #0f172a;
+      --sidebar-hover: rgba(255,255,255,0.06);
+      --accent      : #3b82f6;
+      --accent-dark : #1d4ed8;
+      --success     : #22c55e;
+      --warning     : #f59e0b;
+      --danger      : #ef4444;
+      --purple      : #8b5cf6;
+      --body-bg     : #f1f5f9;
+      --card-radius : 14px;
+      --transition  : 0.2s ease;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--body-bg);
+      color: #1e293b;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .app-wrapper { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ───────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+      flex-shrink: 0;
+      transition: transform var(--transition);
+    }
+
+    .sidebar::-webkit-scrollbar { width: 0; }
+
+    .brand {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff; flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.4);
+    }
+    .brand-text .brand-name { color: #fff; font-size: 15.5px; font-weight: 700; line-height: 1.2; }
+    .brand-text .brand-sub  { color: rgba(255,255,255,0.35); font-size: 11px; margin-top: 2px; }
+
+    .nav-section-label {
+      color: rgba(255,255,255,0.25);
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 16px 20px 6px;
+    }
+
+    .sidebar-nav { padding: 8px 12px; flex: 1; }
+    .sidebar-nav .nav-item { margin-bottom: 2px; }
+
+    .nav-link-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13.5px; font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+      text-decoration: none;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-link-item i { width: 18px; text-align: center; font-size: 13px; flex-shrink: 0; }
+    .nav-link-item .nav-badge {
+      margin-left: auto;
+      background: rgba(239,68,68,0.25); color: #fca5a5;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px;
+    }
+    .nav-link-item:hover  { background: var(--sidebar-hover); color: #fff; }
+    .nav-link-item.active {
+      background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(29,78,216,0.15));
+      color: #93c5fd;
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .nav-link-item.active i { color: #60a5fa; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .sidebar-footer .avatar {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: #fff; font-weight: 700; flex-shrink: 0;
+    }
+    .sidebar-footer .user-name  { color: rgba(255,255,255,0.8); font-size: 12.5px; font-weight: 600; }
+    .sidebar-footer .user-role  { color: rgba(255,255,255,0.3); font-size: 11px; }
+
+    /* ── Main ──────────────────────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+    /* ── Top Bar ───────────────────────────────────────────────── */
+    .topbar {
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 0 28px;
+      height: 62px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 14px; }
+    .page-title  { font-size: 17px; font-weight: 700; color: #0f172a; }
+    .breadcrumb-nav { font-size: 12px; color: #94a3b8; }
+    .breadcrumb-nav span { color: #3b82f6; }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-btn {
+      width: 36px; height: 36px;
+      border-radius: 9px; border: 1px solid #e2e8f0;
+      background: #fff; color: #64748b;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative;
+      transition: background var(--transition), border-color var(--transition);
+      font-size: 13px;
+    }
+    .topbar-btn:hover { background: #f8fafc; border-color: #cbd5e1; }
+    .topbar-btn .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--danger); position: absolute; top: 5px; right: 5px;
+      border: 1px solid #fff;
+    }
+    .online-pill {
+      background: #dcfce7; color: #166534;
+      font-size: 11px; font-weight: 600;
+      padding: 4px 11px; border-radius: 20px;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .online-pill::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: #22c55e; flex-shrink: 0;
+      animation: pulse-dot 1.8s infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── Content ───────────────────────────────────────────────── */
+    .content { padding: 26px 28px; flex: 1; }
+
+    /* ── Pages ─────────────────────────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── Stat Cards ────────────────────────────────────────────── */
+    .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+    @media(max-width:1200px){ .stat-grid{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:600px) { .stat-grid{grid-template-columns:1fr;} }
+
+    .stat-card {
+      border-radius: var(--card-radius);
+      padding: 22px 22px 18px;
+      color: #fff;
+      position: relative; overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      transition: transform var(--transition), box-shadow var(--transition);
+      cursor: default;
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.16); }
+    .stat-card::after {
+      content: '';
+      position: absolute; right: -20px; top: -20px;
+      width: 110px; height: 110px; border-radius: 50%;
+      background: rgba(255,255,255,0.07);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute; right: 18px; bottom: -30px;
+      width: 80px; height: 80px; border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .stat-icon {
+      width: 46px; height: 46px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 14px;
+      backdrop-filter: blur(6px);
+    }
+    .stat-value { font-size: 30px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 12.5px; opacity: 0.82; font-weight: 500; }
+    .stat-footer { font-size: 11.5px; opacity: 0.65; margin-top: 8px; display: flex; align-items: center; gap: 5px; }
+
+    .grad-blue   { background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); }
+    .grad-amber  { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+    .grad-green  { background: linear-gradient(135deg, #22c55e 0%, #15803d 100%); }
+    .grad-purple { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+    .grad-red    { background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%); }
+
+    /* ── Cards ─────────────────────────────────────────────────── */
+    .card {
+      background: #fff;
+      border: none;
+      border-radius: var(--card-radius);
+      box-shadow: 0 1px 10px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 16px 22px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-head h6 {
+      font-size: 14px; font-weight: 700; color: #0f172a;
+      display: flex; align-items: center; gap: 8px; margin: 0;
+    }
+    .card-head h6 i { color: var(--accent); font-size: 13px; }
+    .card-body-p { padding: 22px; }
+
+    /* ── Tables ────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; }
+    table.app-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+    table.app-table thead th {
+      background: #f8fafc;
+      font-size: 10.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.6px;
+      color: #64748b;
+      padding: 11px 18px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    table.app-table tbody td {
+      padding: 12px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+      font-size: 13.5px;
+      color: #1e293b;
+    }
+    table.app-table tbody tr:last-child td { border-bottom: none; }
+    table.app-table tbody tr:hover td { background: #f8fafc; }
+
+    /* ── Badges ────────────────────────────────────────────────── */
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px; border-radius: 20px;
+      font-size: 11.5px; font-weight: 600; white-space: nowrap;
+    }
+    .badge-pill::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .badge-rented   { background:#fef9c3; color:#854d0e; }
+    .badge-rented::before   { background:#eab308; }
+    .badge-returned { background:#dcfce7; color:#14532d; }
+    .badge-returned::before { background:#22c55e; }
+    .badge-overdue  { background:#fee2e2; color:#7f1d1d; }
+    .badge-overdue::before  { background:#ef4444; }
+    .badge-available{ background:#dcfce7; color:#14532d; }
+    .badge-available::before{ background:#22c55e; }
+    .badge-out      { background:#fee2e2; color:#7f1d1d; }
+    .badge-out::before      { background:#ef4444; }
+    .badge-low      { background:#fef9c3; color:#854d0e; }
+    .badge-low::before      { background:#eab308; }
+
+    .id-pill {
+      font-family: 'Courier New', monospace;
+      background: #f1f5f9; color: #475569;
+      padding: 3px 9px; border-radius: 6px; font-size: 12px;
+    }
+
+    /* ── Forms ─────────────────────────────────────────────────── */
+    .form-label  { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 5px; }
+    .form-control, .form-select {
+      border-radius: 9px; font-size: 13.5px;
+      border: 1.5px solid #e2e8f0;
+      padding: 9px 13px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3.5px rgba(59,130,246,0.14);
+      outline: none;
+    }
+    .input-icon-wrap { position: relative; }
+    .input-icon-wrap .icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: #94a3b8; font-size: 13px; pointer-events: none;
+    }
+    .input-icon-wrap .form-control { padding-left: 36px; }
+
+    /* ── Buttons ───────────────────────────────────────────────── */
+    .btn {
+      border-radius: 9px; font-size: 13.5px; font-weight: 600;
+      padding: 9px 20px; transition: all var(--transition);
+      display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 10px rgba(59,130,246,0.35); }
+    .btn-primary:hover { background: var(--accent-dark); box-shadow: 0 4px 14px rgba(59,130,246,0.45); transform: translateY(-1px); color: #fff; }
+    .btn-success { background: #22c55e; color: #fff; box-shadow: 0 2px 10px rgba(34,197,94,0.3); }
+    .btn-success:hover { background: #16a34a; transform: translateY(-1px); color: #fff; }
+    .btn-danger  { background: #ef4444; color: #fff; }
+    .btn-danger:hover  { background: #dc2626; transform: translateY(-1px); color: #fff; }
+    .btn-outline {
+      background: transparent; border: 1.5px solid #e2e8f0;
+      color: #64748b;
+    }
+    .btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; color: #1e293b; }
+    .btn-sm { padding: 6px 14px; font-size: 12.5px; border-radius: 7px; }
+    .btn-icon {
+      width: 34px; height: 34px; padding: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+    }
+
+    /* ── Filter Bar ────────────────────────────────────────────── */
+    .filter-bar {
+      background: #fff;
+      border-radius: var(--card-radius);
+      box-shadow: 0 1px 10px rgba(0,0,0,0.06);
+      padding: 16px 22px;
+      margin-bottom: 20px;
+    }
+
+    /* ── Calc Box ──────────────────────────────────────────────── */
+    .calc-box {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1.5px solid #bfdbfe;
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .calc-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 0; font-size: 13.5px; color: #1d4ed8;
+    }
+    .calc-total {
+      font-size: 18px; font-weight: 800; color: #1e3a8a;
+      border-top: 1.5px solid #bfdbfe;
+      margin-top: 10px; padding-top: 10px;
+    }
+
+    /* ── Progress Bar ──────────────────────────────────────────── */
+    .progress-thin { height: 6px; border-radius: 20px; background: #e2e8f0; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 20px; transition: width 0.6s ease; }
+
+    /* ── Timeline ──────────────────────────────────────────────── */
+    .timeline { position: relative; padding-left: 22px; }
+    .timeline::before { content: ''; position: absolute; left: 5px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; border-radius: 2px; }
+    .timeline-item { position: relative; padding-bottom: 20px; }
+    .timeline-item:last-child { padding-bottom: 0; }
+    .timeline-dot {
+      position: absolute; left: -20px; top: 3px;
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid #fff; box-shadow: 0 0 0 2px currentColor;
+    }
+    .timeline-dot.blue   { color: var(--accent); background: var(--accent); }
+    .timeline-dot.green  { color: #22c55e; background: #22c55e; }
+    .timeline-dot.amber  { color: #f59e0b; background: #f59e0b; }
+    .timeline-dot.red    { color: #ef4444; background: #ef4444; }
+    .timeline-title { font-size: 13px; font-weight: 600; color: #1e293b; }
+    .timeline-meta  { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Modal ─────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(15,23,42,0.55);
+      backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 999;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: #fff; border-radius: 18px;
+      width: 95%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.25s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+    .modal-head {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-head h5 { font-size: 16px; font-weight: 700; margin: 0; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: #f1f5f9; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #64748b; font-size: 14px; transition: background var(--transition);
+    }
+    .modal-close:hover { background: #e2e8f0; color: #1e293b; }
+    .modal-body-p { padding: 22px 24px; }
+    .modal-footer-p {
+      padding: 16px 24px;
+      border-top: 1px solid #f1f5f9;
+      display: flex; justify-content: flex-end; gap: 10px;
+    }
+
+    /* ── Toast ─────────────────────────────────────────────────── */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; flex-direction: column; gap: 10px;
+      z-index: 9999;
+    }
+    .toast-msg {
+      background: #1e293b; color: #fff;
+      padding: 13px 18px; border-radius: 12px;
+      font-size: 13.5px; max-width: 340px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      display: flex; align-items: center; gap: 11px;
+      animation: toast-in 0.3s ease;
+    }
+    .toast-msg.success { border-left: 4px solid #22c55e; }
+    .toast-msg.error   { border-left: 4px solid #ef4444; }
+    .toast-msg.info    { border-left: 4px solid #3b82f6; }
+    @keyframes toast-in { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ── Quick Action Cards ────────────────────────────────────── */
+    .quick-card {
+      border-radius: var(--card-radius);
+      padding: 18px 20px;
+      background: #fff;
+      border: 1.5px solid #e2e8f0;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .quick-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 20px rgba(59,130,246,0.12);
+      transform: translateY(-2px);
+    }
+    .quick-card .qc-icon {
+      width: 44px; height: 44px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; flex-shrink: 0;
+    }
+    .quick-card .qc-label { font-size: 13.5px; font-weight: 700; color: #1e293b; }
+    .quick-card .qc-sub   { font-size: 12px; color: #94a3b8; margin-top: 2px; }
+
+    /* ── Equipment Rating Bar ──────────────────────────────────── */
+    .eq-row-img {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+
+    /* ── Section header ────────────────────────────────────────── */
+    .section-label {
+      font-size: 10.5px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.8px;
+      color: #94a3b8; margin-bottom: 10px;
+    }
+
+    /* ── Overdue row highlight ─────────────────────────────────── */
+    tr.overdue-row td { background: #fff5f5 !important; }
+    tr.overdue-row:hover td { background: #fee2e2 !important; }
+
+    /* ── Empty state ───────────────────────────────────────────── */
+    .empty-state {
+      padding: 50px 20px;
+      text-align: center; color: #94a3b8;
+    }
+    .empty-state i { font-size: 44px; margin-bottom: 12px; opacity: 0.4; display: block; }
+    .empty-state p { font-size: 14px; margin: 0; }
+
+    /* ── Chart Bar Viz ─────────────────────────────────────────── */
+    .mini-chart { display: flex; align-items: flex-end; gap: 5px; height: 50px; }
+    .mini-bar {
+      flex: 1; border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, #93c5fd, #3b82f6);
+      opacity: 0.8; transition: opacity var(--transition);
+      min-width: 8px;
+    }
+    .mini-bar:hover { opacity: 1; }
+
+    /* ── Divider ───────────────────────────────────────────────── */
+    .hr-light { border: none; border-top: 1px solid #f1f5f9; margin: 18px 0; }
+
+    /* ── Responsive ────────────────────────────────────────────── */
+    @media(max-width: 768px) {
+      .sidebar { position: fixed; transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .content { padding: 18px 14px; }
+      .topbar  { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fas fa-wrench"></i></div>
+      <div class="brand-text">
+        <div class="brand-name">EquipRent</div>
+        <div class="brand-sub">Management System</div>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <p class="nav-section-label">Main</p>
+      <ul class="list-unstyled mb-0">
+        <li><button class="nav-link-item active" onclick="showPage('dashboard',this)"><i class="fas fa-gauge-high"></i> Dashboard</button></li>
+        <li><button class="nav-link-item" onclick="showPage('equipment',this)"><i class="fas fa-toolbox"></i> Equipment</button></li>
+      </ul>
+      <p class="nav-section-label">Transactions</p>
+      <ul class="list-unstyled mb-0">
+        <li><button class="nav-link-item" onclick="showPage('rent',this)"><i class="fas fa-hand-holding"></i> Rent Equipment</button></li>
+        <li>
+          <button class="nav-link-item" onclick="showPage('transactions',this)">
+            <i class="fas fa-list-check"></i> Transactions
+            <span class="nav-badge" id="sideOverdueBadge" style="display:none">0</span>
+          </button>
+        </li>
+        <li><button class="nav-link-item" onclick="showPage('return',this)"><i class="fas fa-rotate-left"></i> Return Equipment</button></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="avatar">A</div>
+      <div>
+        <div class="user-name">Admin</div>
+        <div class="user-role">System Administrator</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════ MAIN ═══════════════════════ -->
+  <div class="main">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-btn d-md-none" onclick="document.getElementById('sidebar').classList.toggle('open')">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div>
+          <div class="page-title" id="topbarTitle">Dashboard</div>
+          <div class="breadcrumb-nav">EquipRent &rsaquo; <span id="topbarBread">Dashboard</span></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-btn" onclick="showToast('No new notifications','info')">
+          <i class="fas fa-bell"></i><div class="dot"></div>
+        </div>
+        <div class="topbar-btn" onclick="showToast('Settings coming soon','info')">
+          <i class="fas fa-gear"></i>
+        </div>
+        <div class="online-pill">System Online</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ════════════════ DASHBOARD PAGE ════════════════ -->
+      <div class="page active" id="page-dashboard">
+
+        <!-- Stat Cards -->
+        <div class="stat-grid">
+          <div class="stat-card grad-blue" onclick="showPage('equipment', document.querySelector('[onclick*=equipment]'))">
+            <div class="stat-icon"><i class="fas fa-toolbox"></i></div>
+            <div class="stat-value" id="stat-total-eq">10</div>
+            <div class="stat-label">Total Equipment</div>
+            <div class="stat-footer"><i class="fas fa-circle-check"></i><span id="stat-avail-eq">10</span> available</div>
+          </div>
+          <div class="stat-card grad-amber" onclick="showPage('return', document.querySelector('[onclick*=return])'))">
+            <div class="stat-icon"><i class="fas fa-hand-holding"></i></div>
+            <div class="stat-value" id="stat-active-rentals">0</div>
+            <div class="stat-label">Active Rentals</div>
+            <div class="stat-footer"><i class="fas fa-triangle-exclamation"></i><span id="stat-overdue">0</span> overdue</div>
+          </div>
+          <div class="stat-card grad-green">
+            <div class="stat-icon"><i class="fas fa-peso-sign"></i></div>
+            <div class="stat-value" id="stat-revenue" style="font-size:22px;">₱0</div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-footer"><i class="fas fa-receipt"></i>from returned rentals</div>
+          </div>
+          <div class="stat-card grad-purple" onclick="showPage('transactions', document.querySelector('[onclick*=transactions]'))">
+            <div class="stat-icon"><i class="fas fa-list-check"></i></div>
+            <div class="stat-value" id="stat-total-tx">0</div>
+            <div class="stat-label">Total Transactions</div>
+            <div class="stat-footer"><i class="fas fa-calendar"></i>all time</div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <!-- Quick Actions -->
+          <div class="col-12 col-xl-8">
+            <div class="card">
+              <div class="card-head">
+                <h6><i class="fas fa-bolt"></i> Quick Actions</h6>
+              </div>
+              <div class="card-body-p">
+                <div class="row g-3">
+                  <div class="col-6 col-md-3">
+                    <div class="quick-card" onclick="showPage('rent', document.querySelectorAll('.nav-link-item')[3])">
+                      <div class="qc-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-hand-holding"></i></div>
+                      <div><div class="qc-label">New Rental</div><div class="qc-sub">Rent out equipment</div></div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="quick-card" onclick="showPage('return', document.querySelectorAll('.nav-link-item')[5])">
+                      <div class="qc-icon" style="background:#f0fdf4;color:#22c55e;"><i class="fas fa-rotate-left"></i></div>
+                      <div><div class="qc-label">Process Return</div><div class="qc-sub">Close a rental</div></div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="quick-card" onclick="showPage('equipment', document.querySelectorAll('.nav-link-item')[1]); setTimeout(()=>document.getElementById('addEqForm').scrollIntoView({behavior:'smooth'}),200)">
+                      <div class="qc-icon" style="background:#fdf4ff;color:#a855f7;"><i class="fas fa-plus"></i></div>
+                      <div><div class="qc-label">Add Equipment</div><div class="qc-sub">Expand inventory</div></div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <div class="quick-card" onclick="showPage('transactions', document.querySelectorAll('.nav-link-item')[4])">
+                      <div class="qc-icon" style="background:#fff7ed;color:#f59e0b;"><i class="fas fa-list-check"></i></div>
+                      <div><div class="qc-label">All Records</div><div class="qc-sub">View transactions</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly Activity Chart -->
+          <div class="col-12 col-xl-4">
+            <div class="card h-100">
+              <div class="card-head"><h6><i class="fas fa-chart-bar"></i> Weekly Rentals</h6></div>
+              <div class="card-body-p" style="display:flex;flex-direction:column;gap:10px;">
+                <div class="mini-chart" id="weekChart"></div>
+                <div class="d-flex justify-content-between" style="font-size:11px;color:#94a3b8;">
+                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                </div>
+                <div style="font-size:12px;color:#64748b;text-align:center" id="weekLabel">This week's rental activity</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <!-- Recent Transactions -->
+          <div class="col-12 col-xl-8">
+            <div class="card">
+              <div class="card-head">
+                <h6><i class="fas fa-clock-rotate-left"></i> Recent Transactions</h6>
+                <button class="btn btn-outline btn-sm" onclick="showPage('transactions', document.querySelectorAll('.nav-link-item')[4])">View All</button>
+              </div>
+              <div class="table-wrap">
+                <table class="app-table" id="dashRecentTable">
+                  <thead>
+                    <tr>
+                      <th>ID</th><th>Customer</th><th>Equipment</th>
+                      <th>Rent Date</th><th>Exp. Return</th><th>Amount</th><th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dashRecentBody">
+                    <tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions yet. <a href="#" onclick="showPage('rent',document.querySelectorAll('.nav-link-item')[3]);return false;">Create the first rental</a>.</p></div></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity Feed -->
+          <div class="col-12 col-xl-4">
+            <div class="card h-100">
+              <div class="card-head"><h6><i class="fas fa-rss"></i> Activity Feed</h6></div>
+              <div class="card-body-p">
+                <div class="timeline" id="activityFeed">
+                  <div class="timeline-item">
+                    <div class="timeline-dot blue"></div>
+                    <div class="timeline-title">System started</div>
+                    <div class="timeline-meta">Ready to manage rentals</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- END DASHBOARD -->
+
+      <!-- ════════════════ EQUIPMENT PAGE ════════════════ -->
+      <div class="page" id="page-equipment">
+        <div class="row g-4">
+          <!-- Add Equipment Form -->
+          <div class="col-12 col-lg-4" id="addEqForm">
+            <div class="card">
+              <div class="card-head"><h6><i class="fas fa-plus-circle"></i> Add New Equipment</h6></div>
+              <div class="card-body-p">
+                <div class="mb-3">
+                  <label class="form-label">Equipment Name <span style="color:#ef4444">*</span></label>
+                  <input type="text" class="form-control" id="eqName" placeholder="e.g. Concrete Mixer 350L" maxlength="100">
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Category</label>
+                  <select class="form-select" id="eqCategory">
+                    <option>General</option>
+                    <option>Heavy Equipment</option>
+                    <option>Mixing Equipment</option>
+                    <option>Power Equipment</option>
+                    <option>Construction</option>
+                    <option>Compaction</option>
+                    <option>Breaking</option>
+                    <option>Pumping</option>
+                    <option>Lifting</option>
+                    <option>Grinding</option>
+                    <option>Pneumatic</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-control" id="eqDesc" rows="2" placeholder="Brief description"></textarea>
+                </div>
+                <div class="row g-2 mb-4">
+                  <div class="col-7">
+                    <label class="form-label">Daily Rate (₱) <span style="color:#ef4444">*</span></label>
+                    <input type="number" class="form-control" id="eqRate" step="0.01" min="1" placeholder="0.00">
+                  </div>
+                  <div class="col-5">
+                    <label class="form-label">Qty <span style="color:#ef4444">*</span></label>
+                    <input type="number" class="form-control" id="eqQty" min="1" value="1">
+                  </div>
+                </div>
+                <button class="btn btn-primary w-100" onclick="addEquipment()">
+                  <i class="fas fa-plus"></i> Add Equipment
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Equipment List -->
+          <div class="col-12 col-lg-8">
+            <div class="card">
+              <div class="card-head">
+                <h6><i class="fas fa-boxes-stacked"></i> Inventory <span id="eqCount" style="color:#94a3b8;font-weight:400;font-size:12px;margin-left:4px;">(10 items)</span></h6>
+                <div class="input-icon-wrap" style="width:220px;">
+                  <i class="icon fas fa-search"></i>
+                  <input type="text" class="form-control" id="eqSearch" placeholder="Search equipment…" oninput="renderEquipmentTable()">
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="app-table">
+                  <thead>
+                    <tr><th>#</th><th>Name</th><th>Category</th><th>Daily Rate</th><th>Total</th><th>Available</th><th>Status</th><th></th></tr>
+                  </thead>
+                  <tbody id="eqTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ RENT PAGE ════════════════════ -->
+      <div class="page" id="page-rent">
+        <div class="row g-4">
+          <!-- Rental Form -->
+          <div class="col-12 col-lg-7">
+            <div class="card">
+              <div class="card-head"><h6><i class="fas fa-hand-holding"></i> Rental Details</h6></div>
+              <div class="card-body-p">
+                <p class="section-label">Customer Information</p>
+                <div class="row g-3 mb-3">
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label">Customer Name <span style="color:#ef4444">*</span></label>
+                    <input type="text" class="form-control" id="custName" placeholder="Full name" maxlength="100">
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" id="custPhone" placeholder="09XX-XXX-XXXX">
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Address</label>
+                  <input type="text" class="form-control" id="custAddr" placeholder="Street, City, Province">
+                </div>
+
+                <hr class="hr-light">
+                <p class="section-label">Equipment & Schedule</p>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-12 col-sm-8">
+                    <label class="form-label">Equipment <span style="color:#ef4444">*</span></label>
+                    <select class="form-select" id="rentEqSelect" onchange="updateRentCalc()">
+                      <option value="">— Select Equipment —</option>
+                    </select>
+                  </div>
+                  <div class="col-12 col-sm-4">
+                    <label class="form-label">Quantity <span style="color:#ef4444">*</span></label>
+                    <input type="number" class="form-control" id="rentQty" value="1" min="1" oninput="updateRentCalc()">
+                    <div style="font-size:11.5px;color:#94a3b8;margin-top:4px;" id="rentQtyHelp"></div>
+                  </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label">Rent Date <span style="color:#ef4444">*</span></label>
+                    <input type="date" class="form-control" id="rentDate" onchange="updateRentCalc()">
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <label class="form-label">Expected Return Date <span style="color:#ef4444">*</span></label>
+                    <input type="date" class="form-control" id="rentReturnDate" onchange="updateRentCalc()">
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-control" id="rentNotes" rows="2" placeholder="Optional remarks"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button class="btn btn-primary" onclick="submitRental()">
+                    <i class="fas fa-circle-check"></i> Confirm Rental
+                  </button>
+                  <button class="btn btn-outline" onclick="clearRentForm()">
+                    <i class="fas fa-xmark"></i> Clear
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost Estimate + Stock -->
+          <div class="col-12 col-lg-5 d-flex flex-column gap-3">
+            <div class="card">
+              <div class="card-head"><h6><i class="fas fa-calculator"></i> Cost Estimate</h6></div>
+              <div class="card-body-p">
+                <div class="calc-box">
+                  <div class="calc-row">
+                    <span>Daily Rate</span>
+                    <span id="rCalcRate">₱0.00</span>
+                  </div>
+                  <div class="calc-row">
+                    <span>Quantity</span>
+                    <span id="rCalcQty">1</span>
+                  </div>
+                  <div class="calc-row">
+                    <span>Number of Days</span>
+                    <span id="rCalcDays">0</span>
+                  </div>
+                  <div class="calc-row calc-total">
+                    <span>Estimated Total</span>
+                    <span id="rCalcTotal">₱0.00</span>
+                  </div>
+                </div>
+                <p style="font-size:12px;color:#94a3b8;margin-top:12px;margin-bottom:0;">
+                  <i class="fas fa-circle-info me-1"></i>
+                  Actual total is computed upon return.
+                </p>
+              </div>
+            </div>
+
+            <div class="card flex-grow-1">
+              <div class="card-head"><h6><i class="fas fa-layer-group"></i> Available Stock</h6></div>
+              <div style="overflow-y:auto;max-height:280px;">
+                <table class="app-table" id="stockTable">
+                  <thead><tr><th>Equipment</th><th>Rate/Day</th><th>Avail.</th></tr></thead>
+                  <tbody id="stockBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ TRANSACTIONS PAGE ════════════════ -->
+      <div class="page" id="page-transactions">
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+          <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-4">
+              <label class="form-label mb-1">Search</label>
+              <div class="input-icon-wrap">
+                <i class="icon fas fa-search"></i>
+                <input type="text" class="form-control" id="txSearch" placeholder="Customer, equipment, phone…" oninput="renderTransactions()">
+              </div>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label mb-1">Status</label>
+              <select class="form-select" id="txStatus" onchange="renderTransactions()">
+                <option value="">All Status</option>
+                <option value="rented">Rented</option>
+                <option value="returned">Returned</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label mb-1">From</label>
+              <input type="date" class="form-control" id="txFrom" onchange="renderTransactions()">
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label mb-1">To</label>
+              <input type="date" class="form-control" id="txTo" onchange="renderTransactions()">
+            </div>
+            <div class="col-6 col-md-2 d-flex gap-2">
+              <button class="btn btn-primary flex-grow-1" onclick="renderTransactions()">
+                <i class="fas fa-filter"></i> Filter
+              </button>
+              <button class="btn btn-outline btn-icon" onclick="clearTxFilters()" title="Clear filters">
+                <i class="fas fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary strip -->
+        <div class="d-flex flex-wrap gap-3 mb-3 align-items-center" style="font-size:13px;color:#64748b;">
+          <span><i class="fas fa-list me-1"></i><strong id="txCount">0</strong> records</span>
+          <span><i class="fas fa-peso-sign me-1"></i>Revenue: <strong id="txRevenue">₱0.00</strong></span>
+          <button class="btn btn-primary btn-sm ms-auto" onclick="showPage('rent', document.querySelectorAll('.nav-link-item')[3])">
+            <i class="fas fa-plus"></i> New Rental
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h6><i class="fas fa-list-check"></i> Rental Transactions</h6></div>
+          <div class="table-wrap">
+            <table class="app-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Customer</th><th>Equipment</th><th>Qty</th>
+                  <th>Daily Rate</th><th>Rent Date</th><th>Exp. Return</th>
+                  <th>Act. Return</th><th>Days</th><th>Total</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="txBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════ RETURN PAGE ════════════════════ -->
+      <div class="page" id="page-return">
+        <div class="row g-4" id="returnLayout">
+          <!-- Active Rentals Table -->
+          <div class="col-12">
+            <div class="card">
+              <div class="card-head">
+                <h6><i class="fas fa-clock" style="color:#f59e0b;"></i> Active Rentals</h6>
+                <span id="activeRentalBadge" style="background:#fef9c3;color:#854d0e;padding:3px 11px;border-radius:20px;font-size:12px;font-weight:600;">0 pending</span>
+              </div>
+              <div class="table-wrap">
+                <table class="app-table">
+                  <thead>
+                    <tr><th>ID</th><th>Customer</th><th>Equipment</th><th>Qty</th><th>Rent Date</th><th>Exp. Return</th><th>Days Out</th><th>Est. Amount</th><th>Status</th><th>Action</th></tr>
+                  </thead>
+                  <tbody id="activeRentalsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.content -->
+  </div><!-- /.main -->
+</div><!-- /.app-wrapper -->
+
+<!-- ═══════════════ RETURN MODAL ═══════════════ -->
+<div class="modal-overlay" id="returnModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h5><i class="fas fa-rotate-left me-2" style="color:#22c55e;"></i>Process Return</h5>
+      <button class="modal-close" onclick="closeReturnModal()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="modal-body-p">
+      <div class="row g-2 mb-3" style="font-size:13.5px;">
+        <div class="col-5 fw-semibold text-muted">Rental ID</div>
+        <div class="col-7" id="mRetId">—</div>
+        <div class="col-5 fw-semibold text-muted">Customer</div>
+        <div class="col-7" id="mRetCustomer">—</div>
+        <div class="col-5 fw-semibold text-muted">Equipment</div>
+        <div class="col-7" id="mRetEq">—</div>
+        <div class="col-5 fw-semibold text-muted">Quantity</div>
+        <div class="col-7" id="mRetQty">—</div>
+        <div class="col-5 fw-semibold text-muted">Daily Rate</div>
+        <div class="col-7" id="mRetRate">—</div>
+        <div class="col-5 fw-semibold text-muted">Rent Date</div>
+        <div class="col-7" id="mRetRentDate">—</div>
+        <div class="col-5 fw-semibold text-muted">Expected Return</div>
+        <div class="col-7" id="mRetExpReturn">—</div>
+      </div>
+      <hr class="hr-light">
+      <div class="mb-3">
+        <label class="form-label">Actual Return Date <span style="color:#ef4444">*</span></label>
+        <input type="date" class="form-control" id="actualReturnDate" onchange="updateReturnCalc()">
+      </div>
+      <div class="calc-box" id="returnCalcBox">
+        <div class="calc-row"><span>Rate × Qty / day</span><span id="mCalcRateQty">—</span></div>
+        <div class="calc-row"><span>Number of Days</span><span id="mCalcDays">—</span></div>
+        <div class="calc-row calc-total"><span>Total Amount</span><span id="mCalcTotal">—</span></div>
+      </div>
+    </div>
+    <div class="modal-footer-p">
+      <button class="btn btn-outline" onclick="closeReturnModal()">Cancel</button>
+      <button class="btn btn-success" onclick="confirmReturn()">
+        <i class="fas fa-circle-check"></i> Confirm Return
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════ JS ═══════════════════════════ -->
+<script>
+// ================================================================
+//  Application State
+// ================================================================
+const TODAY = new Date().toISOString().split('T')[0];
+
+// Initial equipment data
+let equipment = [
+  { id:1,  name:'Mini Excavator',       description:'Mini excavator for small to medium digging jobs',         category:'Heavy Equipment',  daily_rate:5000, total_quantity:2,  available_quantity:2 },
+  { id:2,  name:'Concrete Mixer 350L',  description:'Electric concrete mixer with 350-litre capacity',         category:'Mixing Equipment', daily_rate:1500, total_quantity:3,  available_quantity:3 },
+  { id:3,  name:'Generator 5KVA',       description:'Portable diesel generator with 5 KVA output',             category:'Power Equipment',  daily_rate:2500, total_quantity:5,  available_quantity:5 },
+  { id:4,  name:'Scaffolding Set',      description:'Complete steel scaffolding set, up to 6m height',         category:'Construction',     daily_rate:800,  total_quantity:10, available_quantity:10 },
+  { id:5,  name:'Plate Compactor',      description:'Vibratory plate compactor for soil and asphalt',          category:'Compaction',       daily_rate:1200, total_quantity:4,  available_quantity:4 },
+  { id:6,  name:'Electric Jackhammer',  description:'Electric jackhammer with assorted drill bits',            category:'Breaking',         daily_rate:900,  total_quantity:6,  available_quantity:6 },
+  { id:7,  name:'Diesel Water Pump 3"', description:'Diesel water pump with 3-inch outlet',                    category:'Pumping',          daily_rate:700,  total_quantity:8,  available_quantity:8 },
+  { id:8,  name:'Boom Lift 40 ft',      description:'40-foot articulated boom lift for elevated work',         category:'Lifting',          daily_rate:8000, total_quantity:1,  available_quantity:1 },
+  { id:9,  name:'Angle Grinder 9"',     description:'9-inch angle grinder with cutting and grinding discs',    category:'Grinding',         daily_rate:400,  total_quantity:10, available_quantity:10 },
+  { id:10, name:'Air Compressor 50L',   description:'Electric air compressor, 50-litre tank, 8-bar pressure',  category:'Pneumatic',        daily_rate:600,  total_quantity:6,  available_quantity:6 },
+];
+
+let rentals = [];
+let nextRentalId = 1;
+let nextEqId = 11;
+let activeReturnId = null;
+
+// ================================================================
+//  Navigation
+// ================================================================
+const pageTitles = {
+  dashboard: 'Dashboard',
+  equipment: 'Equipment',
+  rent: 'Rent Equipment',
+  transactions: 'Transactions',
+  return: 'Return Equipment'
+};
+
+function showPage(pageId, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+
+  document.querySelectorAll('.nav-link-item').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  document.getElementById('topbarTitle').textContent = pageTitles[pageId];
+  document.getElementById('topbarBread').textContent = pageTitles[pageId];
+
+  if (pageId === 'equipment')    { renderEquipmentTable(); }
+  if (pageId === 'rent')         { renderRentDropdown(); renderStockTable(); }
+  if (pageId === 'transactions') { renderTransactions(); }
+  if (pageId === 'return')       { renderActiveRentals(); }
+  if (pageId === 'dashboard')    { refreshDashboard(); }
+}
+
+// ================================================================
+//  Utilities
+// ================================================================
+const peso = n => '₱' + Number(n).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+const padId = n => '#' + String(n).padStart(4, '0');
+const daysBetween = (a, b) => {
+  const d = new Date(b) - new Date(a);
+  return Math.max(1, Math.round(d / 86400000));
+};
+const isOverdue = r =>
+  r.status === 'rented' && r.expected_return_date < TODAY;
+
+function categoryIcon(cat) {
+  const m = {
+    'Heavy Equipment':'fa-truck', 'Mixing Equipment':'fa-rotate',
+    'Power Equipment':'fa-bolt', 'Construction':'fa-hard-hat',
+    'Compaction':'fa-grip', 'Breaking':'fa-hammer',
+    'Pumping':'fa-droplet', 'Lifting':'fa-arrow-up',
+    'Grinding':'fa-gear', 'Pneumatic':'fa-wind',
+  };
+  return m[cat] || 'fa-toolbox';
+}
+function categoryColor(cat) {
+  const m = {
+    'Heavy Equipment':'#3b82f6', 'Mixing Equipment':'#8b5cf6',
+    'Power Equipment':'#f59e0b', 'Construction':'#64748b',
+    'Compaction':'#0891b2', 'Breaking':'#ef4444',
+    'Pumping':'#0ea5e9', 'Lifting':'#22c55e',
+    'Grinding':'#f97316', 'Pneumatic':'#06b6d4',
+  };
+  return m[cat] || '#64748b';
+}
+
+// ================================================================
+//  Toast
+// ================================================================
+function showToast(msg, type = 'success') {
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  const el = document.createElement('div');
+  el.className = 'toast-msg ' + type;
+  el.innerHTML = `<i class="fas ${icons[type] || 'fa-circle-info'}"></i><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3800);
+}
+
+// ================================================================
+//  Activity Feed
+// ================================================================
+const actLog = [];
+function logActivity(msg, dot = 'blue') {
+  const now = new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' });
+  actLog.unshift({ msg, dot, time: now });
+  if (actLog.length > 12) actLog.pop();
+  const feed = document.getElementById('activityFeed');
+  feed.innerHTML = actLog.map(a => `
+    <div class="timeline-item">
+      <div class="timeline-dot ${a.dot}"></div>
+      <div class="timeline-title">${a.msg}</div>
+      <div class="timeline-meta">${a.time}</div>
+    </div>`).join('');
+}
+
+// ================================================================
+//  Dashboard
+// ================================================================
+function refreshDashboard() {
+  const active   = rentals.filter(r => r.status === 'rented').length;
+  const overdue  = rentals.filter(isOverdue).length;
+  const revenue  = rentals.filter(r => r.status === 'returned').reduce((s, r) => s + r.total_amount, 0);
+  const availEq  = equipment.filter(e => e.available_quantity > 0).length;
+
+  document.getElementById('stat-total-eq').textContent      = equipment.length;
+  document.getElementById('stat-avail-eq').textContent      = availEq;
+  document.getElementById('stat-active-rentals').textContent = active;
+  document.getElementById('stat-overdue').textContent       = overdue;
+  document.getElementById('stat-revenue').textContent       = revenue >= 1000000
+    ? '₱' + (revenue / 1000000).toFixed(1) + 'M'
+    : revenue >= 1000 ? '₱' + (revenue / 1000).toFixed(1) + 'K'
+    : peso(revenue);
+  document.getElementById('stat-total-tx').textContent      = rentals.length;
+
+  // Overdue badge in sidebar
+  const ob = document.getElementById('sideOverdueBadge');
+  ob.style.display = overdue > 0 ? 'inline-block' : 'none';
+  ob.textContent = overdue;
+
+  // Weekly bar chart (random-ish based on rentals)
+  const chart = document.getElementById('weekChart');
+  const bars  = [3,5,2,7,4,6,1].map((h, i) => {
+    const dayRent = rentals.filter(r => {
+      const d = new Date(r.rent_date);
+      return d.getDay() === ((i + 1) % 7);
+    }).length;
+    const ht = Math.max(5, Math.min(50, (h + dayRent) * 5));
+    return `<div class="mini-bar" style="height:${ht}px;" title="Day ${i+1}: ${dayRent} rentals"></div>`;
+  });
+  chart.innerHTML = bars.join('');
+  document.getElementById('weekLabel').textContent =
+    rentals.length > 0 ? `${rentals.length} total rental${rentals.length > 1 ? 's' : ''} recorded` : "This week's rental activity";
+
+  // Recent table (last 8)
+  const recent = [...rentals].sort((a, b) => b.id - a.id).slice(0, 8);
+  const tbody = document.getElementById('dashRecentBody');
+  if (recent.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions yet. <a href="#" onclick="showPage('rent',document.querySelectorAll('.nav-link-item')[3]);return false;">Create the first rental</a>.</p></div></td></tr>`;
+  } else {
+    tbody.innerHTML = recent.map(r => {
+      const eq   = equipment.find(e => e.id === r.equipment_id) || {};
+      const ds   = isOverdue(r) ? 'overdue' : r.status;
+      return `<tr class="${isOverdue(r) ? 'overdue-row' : ''}">
+        <td><span class="id-pill">${padId(r.id)}</span></td>
+        <td><strong>${esc(r.customer_name)}</strong></td>
+        <td>${esc(eq.name || '')}</td>
+        <td>${r.rent_date}</td>
+        <td>${r.expected_return_date}</td>
+        <td>${r.total_amount != null ? peso(r.total_amount) : '<span style="color:#94a3b8">—</span>'}</td>
+        <td>${badgePill(ds)}</td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+function badgePill(status) {
+  return `<span class="badge-pill badge-${status}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>`;
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ================================================================
+//  Equipment
+// ================================================================
+function addEquipment() {
+  const name = document.getElementById('eqName').value.trim();
+  const cat  = document.getElementById('eqCategory').value;
+  const desc = document.getElementById('eqDesc').value.trim();
+  const rate = parseFloat(document.getElementById('eqRate').value);
+  const qty  = parseInt(document.getElementById('eqQty').value);
+
+  if (!name)       return showToast('Equipment name is required.', 'error');
+  if (!rate || rate <= 0) return showToast('Daily rate must be greater than 0.', 'error');
+  if (!qty || qty < 1)   return showToast('Quantity must be at least 1.', 'error');
+
+  const newEq = { id: nextEqId++, name, description: desc, category: cat, daily_rate: rate, total_quantity: qty, available_quantity: qty };
+  equipment.unshift(newEq);
+
+  document.getElementById('eqName').value = '';
+  document.getElementById('eqDesc').value = '';
+  document.getElementById('eqRate').value = '';
+  document.getElementById('eqQty').value  = '1';
+
+  renderEquipmentTable();
+  showToast(`"${name}" added to inventory.`, 'success');
+  logActivity(`Equipment added: ${name}`, 'blue');
+  refreshDashboard();
+}
+
+function deleteEquipment(id) {
+  const hasRentals = rentals.some(r => r.equipment_id === id);
+  if (hasRentals) return showToast('Cannot delete — equipment has rental records.', 'error');
+  equipment = equipment.filter(e => e.id !== id);
+  renderEquipmentTable();
+  showToast('Equipment deleted.', 'info');
+  refreshDashboard();
+}
+
+function renderEquipmentTable() {
+  const q = (document.getElementById('eqSearch').value || '').toLowerCase();
+  document.getElementById('eqCount').textContent = `(${equipment.length} items)`;
+  const filtered = equipment.filter(e =>
+    e.name.toLowerCase().includes(q) || e.category.toLowerCase().includes(q)
+  );
+  const tbody = document.getElementById('eqTableBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-toolbox"></i><p>No equipment found.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(eq => {
+    const color = categoryColor(eq.category);
+    const icon  = categoryIcon(eq.category);
+    const avail = eq.available_quantity;
+    const pct   = Math.round((avail / eq.total_quantity) * 100);
+    const ds    = avail <= 0 ? 'out' : avail <= Math.ceil(eq.total_quantity * 0.25) ? 'low' : 'available';
+    const dsLabel = avail <= 0 ? 'Out' : avail <= Math.ceil(eq.total_quantity * 0.25) ? 'Low' : 'Available';
+    return `<tr>
+      <td style="color:#94a3b8;font-size:12px;">${eq.id}</td>
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          <div class="eq-row-img" style="background:${color}18;color:${color};"><i class="fas ${icon}"></i></div>
+          <div>
+            <div style="font-weight:600;">${esc(eq.name)}</div>
+            ${eq.description ? `<div style="font-size:12px;color:#94a3b8;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(eq.description)}</div>` : ''}
+          </div>
+        </div>
+      </td>
+      <td><span style="background:#f1f5f9;color:#475569;padding:3px 9px;border-radius:6px;font-size:11.5px;">${esc(eq.category)}</span></td>
+      <td style="font-weight:600;">${peso(eq.daily_rate)}</td>
+      <td>${eq.total_quantity}</td>
+      <td>
+        <div style="font-weight:600;margin-bottom:4px;">${avail} / ${eq.total_quantity}</div>
+        <div class="progress-thin" style="width:80px;"><div class="progress-fill" style="width:${pct}%;background:${avail<=0?'#ef4444':avail<=Math.ceil(eq.total_quantity*.25)?'#f59e0b':'#22c55e'};"></div></div>
+      </td>
+      <td><span class="badge-pill badge-${ds}">${dsLabel}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm btn-icon" style="border-color:#fecaca;color:#ef4444;" onclick="deleteEquipment(${eq.id})" title="Delete">
+          <i class="fas fa-trash-can"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ================================================================
+//  Rent Equipment
+// ================================================================
+function renderRentDropdown() {
+  const sel  = document.getElementById('rentEqSelect');
+  const avail = equipment.filter(e => e.available_quantity > 0);
+  sel.innerHTML = '<option value="">— Select Equipment —</option>' +
+    avail.map(e => `<option value="${e.id}">${esc(e.name)} (${peso(e.daily_rate)}/day · ${e.available_quantity} avail.)</option>`).join('');
+  updateRentCalc();
+}
+
+function renderStockTable() {
+  const avail = equipment.filter(e => e.available_quantity > 0);
+  document.getElementById('stockBody').innerHTML = avail.length === 0
+    ? `<tr><td colspan="3" class="text-center py-3" style="color:#94a3b8;font-size:13px;">No equipment available</td></tr>`
+    : avail.map(e => `<tr>
+        <td style="font-weight:600;">${esc(e.name)}</td>
+        <td>${peso(e.daily_rate)}</td>
+        <td><span class="badge-pill badge-available">${e.available_quantity}</span></td>
+      </tr>`).join('');
+}
+
+function updateRentCalc() {
+  const eqId   = parseInt(document.getElementById('rentEqSelect').value);
+  const qty    = parseInt(document.getElementById('rentQty').value) || 0;
+  const d1     = document.getElementById('rentDate').value;
+  const d2     = document.getElementById('rentReturnDate').value;
+  const eq     = equipment.find(e => e.id === eqId);
+  const rate   = eq ? eq.daily_rate : 0;
+  const maxQty = eq ? eq.available_quantity : 0;
+
+  if (eq) {
+    document.getElementById('rentQtyHelp').textContent = `Max: ${maxQty}`;
+    document.getElementById('rentQty').max = maxQty;
+  }
+  const days  = (d1 && d2 && d2 >= d1) ? daysBetween(d1, d2) : 0;
+  const total = rate * qty * days;
+
+  document.getElementById('rCalcRate').textContent  = peso(rate);
+  document.getElementById('rCalcQty').textContent   = qty;
+  document.getElementById('rCalcDays').textContent  = days;
+  document.getElementById('rCalcTotal').textContent = peso(total);
+}
+
+function submitRental() {
+  const custName  = document.getElementById('custName').value.trim();
+  const custPhone = document.getElementById('custPhone').value.trim();
+  const custAddr  = document.getElementById('custAddr').value.trim();
+  const eqId      = parseInt(document.getElementById('rentEqSelect').value);
+  const qty       = parseInt(document.getElementById('rentQty').value);
+  const rentDate  = document.getElementById('rentDate').value;
+  const retDate   = document.getElementById('rentReturnDate').value;
+  const notes     = document.getElementById('rentNotes').value.trim();
+
+  if (!custName)        return showToast('Customer name is required.', 'error');
+  if (!eqId)            return showToast('Please select equipment.', 'error');
+  if (!qty || qty < 1)  return showToast('Quantity must be at least 1.', 'error');
+  if (!rentDate || !retDate) return showToast('Both dates are required.', 'error');
+  if (retDate < rentDate)    return showToast('Return date cannot be before rent date.', 'error');
+
+  const eq = equipment.find(e => e.id === eqId);
+  if (!eq) return showToast('Equipment not found.', 'error');
+  if (qty > eq.available_quantity) return showToast(`Only ${eq.available_quantity} unit(s) available.`, 'error');
+
+  eq.available_quantity -= qty;
+
+  const rental = {
+    id: nextRentalId++,
+    equipment_id: eqId,
+    customer_name: custName,
+    customer_phone: custPhone,
+    customer_address: custAddr,
+    quantity: qty,
+    daily_rate: eq.daily_rate,
+    rent_date: rentDate,
+    expected_return_date: retDate,
+    actual_return_date: null,
+    total_days: null,
+    total_amount: null,
+    status: 'rented',
+    notes
+  };
+  rentals.unshift(rental);
+
+  showToast(`Rental ${padId(rental.id)} created for ${custName}!`, 'success');
+  logActivity(`Rented: ${eq.name} → ${custName}`, 'blue');
+  clearRentForm();
+  refreshDashboard();
+}
+
+function clearRentForm() {
+  ['custName','custPhone','custAddr','rentDate','rentReturnDate','rentNotes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('rentEqSelect').value = '';
+  document.getElementById('rentQty').value = '1';
+  document.getElementById('rentQtyHelp').textContent = '';
+  // Set dates
+  document.getElementById('rentDate').value = TODAY;
+  const tom = new Date(); tom.setDate(tom.getDate()+1);
+  document.getElementById('rentReturnDate').value = tom.toISOString().split('T')[0];
+  updateRentCalc();
+  renderStockTable();
+  renderRentDropdown();
+}
+
+// ================================================================
+//  Transactions
+// ================================================================
+function renderTransactions() {
+  const q      = (document.getElementById('txSearch').value || '').toLowerCase();
+  const status = document.getElementById('txStatus').value;
+  const from   = document.getElementById('txFrom').value;
+  const to     = document.getElementById('txTo').value;
+
+  let filtered = rentals.filter(r => {
+    const eq = equipment.find(e => e.id === r.equipment_id) || {};
+    if (q && !r.customer_name.toLowerCase().includes(q) &&
+             !(eq.name || '').toLowerCase().includes(q) &&
+             !(r.customer_phone || '').toLowerCase().includes(q)) return false;
+    if (status === 'rented'   && r.status !== 'rented')   return false;
+    if (status === 'returned' && r.status !== 'returned') return false;
+    if (status === 'overdue'  && !isOverdue(r))           return false;
+    if (from && r.rent_date < from) return false;
+    if (to   && r.rent_date > to)   return false;
+    return true;
+  });
+
+  const revenue = filtered.filter(r => r.status === 'returned').reduce((s, r) => s + r.total_amount, 0);
+  document.getElementById('txCount').textContent   = filtered.length;
+  document.getElementById('txRevenue').textContent = peso(revenue);
+
+  const tbody = document.getElementById('txBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="12"><div class="empty-state"><i class="fas fa-magnifying-glass"></i><p>No transactions match your criteria.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = filtered.map(r => {
+    const eq  = equipment.find(e => e.id === r.equipment_id) || {};
+    const ds  = isOverdue(r) ? 'overdue' : r.status;
+    const ret = r.actual_return_date || '<span style="color:#94a3b8">—</span>';
+    const days = r.total_days != null ? r.total_days : '<span style="color:#94a3b8">—</span>';
+    const amt  = r.total_amount != null ? `<strong>${peso(r.total_amount)}</strong>` : '<span style="color:#94a3b8">—</span>';
+    return `<tr class="${isOverdue(r) ? 'overdue-row' : ''}">
+      <td><span class="id-pill">${padId(r.id)}</span></td>
+      <td>
+        <strong>${esc(r.customer_name)}</strong>
+        ${r.customer_phone ? `<br><span style="font-size:12px;color:#94a3b8;">${esc(r.customer_phone)}</span>` : ''}
+      </td>
+      <td>${esc(eq.name || '')}</td>
+      <td>${r.quantity}</td>
+      <td>${peso(r.daily_rate)}</td>
+      <td>${r.rent_date}</td>
+      <td class="${isOverdue(r) ? 'fw-bold' : ''}" style="${isOverdue(r) ? 'color:#ef4444;' : ''}">${r.expected_return_date}</td>
+      <td>${ret}</td>
+      <td>${days}</td>
+      <td>${amt}</td>
+      <td>${badgePill(ds)}</td>
+      <td>
+        ${r.status === 'rented'
+          ? `<button class="btn btn-success btn-sm btn-icon" onclick="openReturnModal(${r.id})" title="Process Return"><i class="fas fa-rotate-left"></i></button>`
+          : `<span style="color:#94a3b8;font-size:12px;">—</span>`}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function clearTxFilters() {
+  ['txSearch','txFrom','txTo'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('txStatus').value = '';
+  renderTransactions();
+}
+
+// ================================================================
+//  Return Equipment
+// ================================================================
+function renderActiveRentals() {
+  const active = rentals.filter(r => r.status === 'rented');
+  document.getElementById('activeRentalBadge').textContent = active.length + ' pending';
+  const tbody = document.getElementById('activeRentalsBody');
+  if (active.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><i class="fas fa-circle-check" style="color:#22c55e;"></i><p>No active rentals — everything has been returned!</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = active.map(r => {
+    const eq       = equipment.find(e => e.id === r.equipment_id) || {};
+    const daysOut  = daysBetween(r.rent_date, TODAY);
+    const estAmt   = daysOut * r.daily_rate * r.quantity;
+    const ov       = isOverdue(r);
+    const ds       = ov ? 'overdue' : 'rented';
+    return `<tr class="${ov ? 'overdue-row' : ''}">
+      <td><span class="id-pill">${padId(r.id)}</span></td>
+      <td>
+        <strong>${esc(r.customer_name)}</strong>
+        ${r.customer_phone ? `<br><span style="font-size:12px;color:#94a3b8">${esc(r.customer_phone)}</span>` : ''}
+      </td>
+      <td>${esc(eq.name || '')}</td>
+      <td>${r.quantity}</td>
+      <td>${r.rent_date}</td>
+      <td class="${ov ? 'fw-bold' : ''}" style="${ov ? 'color:#ef4444;' : ''}">${r.expected_return_date}${ov ? `<br><span style="font-size:11.5px;color:#ef4444;">Overdue!</span>` : ''}</td>
+      <td>${daysOut} day${daysOut !== 1 ? 's' : ''}</td>
+      <td style="font-weight:600;">${peso(estAmt)}</td>
+      <td>${badgePill(ds)}</td>
+      <td>
+        <button class="btn btn-success btn-sm" onclick="openReturnModal(${r.id})">
+          <i class="fas fa-rotate-left"></i> Return
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ================================================================
+//  Return Modal
+// ================================================================
+function openReturnModal(rentalId) {
+  const r  = rentals.find(x => x.id === rentalId && x.status === 'rented');
+  const eq = equipment.find(e => e.id === r?.equipment_id);
+  if (!r || !eq) return showToast('Rental not found.', 'error');
+
+  activeReturnId = rentalId;
+  document.getElementById('mRetId').textContent       = padId(r.id);
+  document.getElementById('mRetCustomer').textContent = r.customer_name;
+  document.getElementById('mRetEq').textContent       = eq.name;
+  document.getElementById('mRetQty').textContent      = r.quantity;
+  document.getElementById('mRetRate').textContent     = peso(r.daily_rate) + ' / day';
+  document.getElementById('mRetRentDate').textContent = r.rent_date;
+  document.getElementById('mRetExpReturn').textContent= r.expected_return_date;
+
+  const input = document.getElementById('actualReturnDate');
+  input.value = TODAY;
+  input.min   = r.rent_date;
+
+  document.getElementById('mCalcRateQty').textContent = peso(r.daily_rate * r.quantity);
+  updateReturnCalc();
+  document.getElementById('returnModal').classList.add('open');
+}
+
+function closeReturnModal() {
+  document.getElementById('returnModal').classList.remove('open');
+  activeReturnId = null;
+}
+
+function updateReturnCalc() {
+  const r = rentals.find(x => x.id === activeReturnId);
+  if (!r) return;
+  const ret   = document.getElementById('actualReturnDate').value;
+  if (!ret) return;
+  const days  = daysBetween(r.rent_date, ret);
+  const total = days * r.daily_rate * r.quantity;
+  document.getElementById('mCalcDays').textContent  = days + ' day' + (days !== 1 ? 's' : '');
+  document.getElementById('mCalcTotal').textContent = peso(total);
+}
+
+function confirmReturn() {
+  const r = rentals.find(x => x.id === activeReturnId);
+  if (!r) return;
+  const ret = document.getElementById('actualReturnDate').value;
+  if (!ret) return showToast('Please enter the return date.', 'error');
+  if (ret < r.rent_date) return showToast('Return date cannot be before rent date.', 'error');
+
+  const days  = daysBetween(r.rent_date, ret);
+  const total = days * r.daily_rate * r.quantity;
+  const eq    = equipment.find(e => e.id === r.equipment_id);
+
+  r.status             = 'returned';
+  r.actual_return_date = ret;
+  r.total_days         = days;
+  r.total_amount       = total;
+
+  if (eq) eq.available_quantity += r.quantity;
+
+  closeReturnModal();
+  showToast(`Return processed for ${r.customer_name}. Total: ${peso(total)}`, 'success');
+  logActivity(`Returned: ${eq?.name || 'Equipment'} ← ${r.customer_name}`, 'green');
+  renderActiveRentals();
+  refreshDashboard();
+}
+
+// ================================================================
+//  Init
+// ================================================================
+(function init() {
+  // Set default dates for rent form
+  document.getElementById('rentDate').value = TODAY;
+  const tom = new Date(); tom.setDate(tom.getDate() + 1);
+  document.getElementById('rentReturnDate').value = tom.toISOString().split('T')[0];
+
+  refreshDashboard();
+  renderEquipmentTable();
+
+  // Close modal on overlay click
+  document.getElementById('returnModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReturnModal();
+  });
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
